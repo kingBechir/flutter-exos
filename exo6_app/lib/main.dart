@@ -1,122 +1,314 @@
+// j'importe le package flutter de base (widgets, material design etc.)
 import 'package:flutter/material.dart';
 
+// point d'entrée de mon app
 void main() {
-  runApp(const MyApp());
+  // je lance mon app qui s'appelle Exo6App
+  runApp(const Exo6App());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+// c'est mon widget principal
+class Exo6App extends StatelessWidget {
+  const Exo6App({super.key}); // constructeur de base
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    // je retourne une MaterialApp (c'est la base de toutes les apps flutter)
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false, // j'enlève le petit bandeau "debug"
+      title: 'Exo 6 - Profil', // titre de mon app
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true, // j'active material 3 (nouveau design flutter)
+        colorSchemeSeed: const Color(0xFF4A90E2), // couleur principale (bleu)
+        fontFamily: 'Roboto', // police du texte
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const ProfilePage(), // la première page affichée est ProfilePage
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+// ma page de profil
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    final bg = const Color(0xFFF5F5F5); // couleur gris clair pour le fond
+
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+      backgroundColor: bg, // j’applique la couleur du fond
+      body: SafeArea( // safe area pour pas que ça touche les bordures (ex: notch)
+        child: SingleChildScrollView( // je mets un scroll pour pas déborder
+          child: Column(
+            children: [
+              // j’affiche le header (haut de la page)
+              const _ProfileHeader(),
+
+              // espace
+              const SizedBox(height: 16),
+
+              // mes 3 cartes de stats (projets, followers, following)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16), // marge
+                child: Row(
+                  children: const [
+                    Expanded( // 1ere carte
+                      child: _StatCard(
+                        icon: Icons.folder_open_rounded, // icône dossier
+                        iconColor: Color(0xFF2196F3), // bleu foncé
+                        value: '12', // valeur affichée
+                        label: 'Projets', // label en dessous
+                      ),
+                    ),
+                    SizedBox(width: 12), // espace entre les cartes
+                    Expanded( // 2eme carte
+                      child: _StatCard(
+                        icon: Icons.group_rounded, // icône groupe
+                        iconColor: Color(0xFF42A5F5), // bleu moyen
+                        value: '1.2k', // valeur
+                        label: 'Followers', // label
+                      ),
+                    ),
+                    SizedBox(width: 12), // espace
+                    Expanded( // 3eme carte
+                      child: _StatCard(
+                        icon: Icons.person_add_alt_1_rounded, // icône ajout user
+                        iconColor: Color(0xFF64B5F6), // bleu clair
+                        value: '340', // valeur
+                        label: 'Following', // label
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // espace
+              const SizedBox(height: 16),
+
+              // le menu des options (paramètres, aide etc.)
+              const _OptionsCard(),
+
+              // espace final
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+    );
+  }
+}
+
+// header en haut avec le dégradé + avatar + nom
+class _ProfileHeader extends StatelessWidget {
+  const _ProfileHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack( // je stacke des widgets les uns sur les autres
+      clipBehavior: Clip.none,
+      alignment: Alignment.center, // centré
+      children: [
+        // fond bleu dégradé
+        Container(
+          height: 160,
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF4A90E2), Color(0xFF6BB3FF)], // bleu foncé -> clair
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+        ),
+
+        // avatar + textes positionnés en bas
+        Positioned(
+          bottom: -64, // je fais descendre un peu
+          child: Column(
+            children: [
+              // avatar rond
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15), // petite ombre
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: const CircleAvatar(
+                  radius: 48, // taille avatar externe
+                  backgroundColor: Color(0xFFE9D9FF), // halo violet
+                  child: CircleAvatar(
+                    radius: 44, // cercle interne
+                    backgroundColor: Colors.white,
+                    child: Icon(
+                      Icons.person_rounded, // icône utilisateur
+                      size: 48,
+                      color: Color(0xFF7E57C2), // violet foncé
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Marie Dubois', // nom affiché
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Développeuse Flutter', // sous-titre
+                style: TextStyle(
+                  color: Colors.black.withOpacity(0.6),
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 64), // espace avant les stats
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// composant d’une carte statistique (réutilisable)
+class _StatCard extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String value;
+  final String label;
+
+  const _StatCard({
+    required this.icon,
+    required this.iconColor,
+    required this.value,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card( // une petite carte avec ombre
+      elevation: 1.5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircleAvatar( // icône dans un cercle
+              radius: 18,
+              backgroundColor: iconColor.withOpacity(0.12),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(height: 10),
             Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+              value, // j’affiche la valeur
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label, // j’affiche le label
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.black.withOpacity(0.6),
+              ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+// carte qui contient toutes les options (liste de menus)
+class _OptionsCard extends StatelessWidget {
+  const _OptionsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final tileColor = Colors.black.withOpacity(0.06); // fond gris pour icônes
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Card(
+        elevation: 1.5,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Column(
+          children: [
+            _OptionTile(
+              icon: Icons.settings_rounded,
+              bgColor: tileColor,
+              title: 'Paramètres',
+              trailing: Icons.chevron_right_rounded, // petite flèche
+            ),
+            _OptionTile(
+              icon: Icons.help_outline_rounded,
+              bgColor: tileColor,
+              title: 'Aide',
+              trailing: Icons.chevron_right_rounded,
+            ),
+            _OptionTile(
+              icon: Icons.star_rate_rounded,
+              bgColor: tileColor,
+              title: "Évaluer l'app",
+              trailing: Icons.chevron_right_rounded,
+            ),
+            _OptionTile(
+              icon: Icons.share_rounded,
+              bgColor: tileColor,
+              title: 'Partager',
+              trailing: Icons.chevron_right_rounded,
+            ),
+            const Divider(height: 0), // séparateur
+            _OptionTile(
+              icon: Icons.logout_rounded,
+              bgColor: tileColor,
+              title: 'Déconnexion',
+              trailing: null, // pas de flèche
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// un seul bouton de menu
+class _OptionTile extends StatelessWidget {
+  final IconData icon;
+  final Color bgColor;
+  final String title;
+  final IconData? trailing;
+
+  const _OptionTile({
+    required this.icon,
+    required this.bgColor,
+    required this.title,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: CircleAvatar( // petit rond à gauche avec icône
+        radius: 18,
+        backgroundColor: bgColor,
+        child: Icon(icon, color: Colors.black87),
+      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+      trailing: trailing != null ? Icon(trailing) : null, // flèche si pas null
+      onTap: () {}, // je laisse vide, c’est juste visuel
+      dense: true, // compact
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
     );
   }
 }
